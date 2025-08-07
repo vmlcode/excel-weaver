@@ -21,5 +21,5 @@ gr.Interface(
     outputs=gr.TextArea(label="Answer from LLM"),
     title="PandasAI Metadata Prompt Test",
     description="Add an excel file and a prompt to generate a metadata description using the prompt below \n V. Maldonado (SalesfactoryAI)"
-).launch(share=True)
+).launch()
 
