@@ -1,30 +1,25 @@
-import pandasai as pai
-from dotenv import load_dotenv
-from pandasai_openai import AzureOpenAI
-import os
+import gradio as gr
 
-load_dotenv()
+from main import create_description
 
-AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
-AZURE_OPENAI_API_TOKEN = os.getenv("AZURE_OPENAI_API_TOKEN")
-AZURE_OPENAI_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION")
+DEFAULT_PROMPT = """
+DO NOT ADD CODE IMAGES OR CHARTS TO THE RESPONSE ONLY USE TEXT AND THE FOLLOWING INSTRUCTIONS
+Using the provided Excel file, generate a metadata summary (no more than 5 sentences) that covers:
+  1. Overall purpose or topic of the data.
+  2. Sheet names and Year of the info
+  3. Key columns (names + data types) and any important ranges (e.g. date spans, numeric min/max).
+  5. One or two notable insights (e.g., dominant category, outlier, or trend).
 
-llm = AzureOpenAI(
-    azure_endpoint=AZURE_OPENAI_ENDPOINT,
-    api_token=AZURE_OPENAI_API_TOKEN,
-    deployment_name=AZURE_OPENAI_DEPLOYMENT_NAME,
-    api_version=AZURE_OPENAI_API_VERSION
-)
+Be concise but precise—this summary will help decide whether to load and use the file."""
 
-pai.config.set({
-    "llm": llm,
-    "save_logs": False,
-    "save_charts": False
-})
-
-df = pai.read_excel("./example_files/Electric_Vehicle_Population_Data copy.xlsx")
-print(df.head)
-response = df.chat("ALWAYS CREATE JUST TEXT NOT CHARTS OR CODE: Please create a brief descriptive summary of this excel file")
-print(f"llm response: {response}")
+gr.Interface(
+    fn=create_description,
+    inputs=[
+        gr.File(label="Upload your file"),
+        gr.TextArea(label="Write your Prompt Here", value=DEFAULT_PROMPT ),
+    ],
+    outputs=gr.TextArea(label="Answer from LLM"),
+    title="PandasAI Metadata Prompt Test",
+    description="Add an excel file and a prompt to generate a metadata description using the prompt below \n V. Maldonado (SalesfactoryAI)"
+).launch(share=True)
 
