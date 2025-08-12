@@ -1,25 +1,31 @@
 import gradio as gr
-
 from main import create_description
 
-DEFAULT_PROMPT = """
-DO NOT ADD CODE IMAGES OR CHARTS TO THE RESPONSE ONLY USE TEXT AND THE FOLLOWING INSTRUCTIONS
-Using the provided Excel file, generate a metadata summary (no more than 5 sentences) that covers:
-  1. Overall purpose or topic of the data.
-  2. Sheet names and Year of the info
-  3. Key columns (names + data types) and any important ranges (e.g. date spans, numeric min/max).
-  5. One or two notable insights (e.g., dominant category, outlier, or trend).
+DEFAULT_PROMPT = """You are a data analyst performing an initial review of a file for a key business decision.
+Examine the provided Excel file and create a brief metadata summary (up to 5 sentences) that covers the following:
+1. **Data Topic & Purpose**: What the dataset includes and its intended use.
+2. **Key Structure**: List main columns with their data types (text/numeric/date) and important value ranges (date spans, min/max values). ALWAYS specify the actual value for single-value columns (e.g., "Brand: Apple", "Media Channel: Instagram") rather than stating "1 unique" or "single value"
+3. **Notable Patterns**: Find 1-2 significant insights like common categories, outliers, trends, or data quality issues.
+Format: Plain text only. No code blocks, images, or charts.
+This summary will help determine if the file is suitable for further analysis."""
 
-Be concise but precise—this summary will help decide whether to load and use the file."""
 
-gr.Interface(
+# Create Gradio interface
+iface = gr.Interface(
     fn=create_description,
     inputs=[
-        gr.File(label="Upload your file"),
-        gr.TextArea(label="Write your Prompt Here", value=DEFAULT_PROMPT ),
+        gr.File(label="Upload your Excel file", file_types=[".xlsx", ".xls", ".csv"]),
+        gr.Textbox(
+            label="Analysis Prompt", 
+            value=DEFAULT_PROMPT,
+            lines=10,
+            max_lines=20
+        ),
     ],
-    outputs=gr.TextArea(label="Answer from LLM"),
-    title="PandasAI Metadata Prompt Test",
-    description="Add an excel file and a prompt to generate a metadata description using the prompt below \n V. Maldonado (SalesfactoryAI)"
-).launch()
+    outputs=gr.Textbox(label="Analysis Results", lines=10, max_lines=20),
+    title="Excel Data Analyzer with PandasAI",
+    description="Upload an Excel file and provide a prompt to generate metadata analysis. The tool will handle various Excel formats and provide fallback options if needed."
+)
 
+if __name__ == "__main__":
+    iface.launch()
